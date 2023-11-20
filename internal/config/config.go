@@ -20,7 +20,7 @@ type envVars struct {
 
 var EnvVars envVars
 
-func LoadConfigs() *envVars {
+func LoadConfigs() {
 	viper.SetConfigFile(".env")
 	err := viper.ReadInConfig()
 	if err != nil {
@@ -44,5 +44,4 @@ func LoadConfigs() *envVars {
 		panic(err)
 	}
 	EnvVars.S3Client = s3.New(sess)
-	return &EnvVars
 }
