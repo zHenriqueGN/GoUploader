@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-type EnvVars struct {
+type envVars struct {
 	NumFiles     int    `mapstructure:"NUM_FILES"`
 	S3BucketName string `mapstructure:"S3_BUCKET_NAME"`
 	AWSRegion    string `mapstructure:"AWS_REGION"`
@@ -18,30 +18,31 @@ type EnvVars struct {
 	S3Client     *s3.S3
 }
 
-func LoadConfigs() *EnvVars {
+var EnvVars envVars
+
+func LoadConfigs() *envVars {
 	viper.SetConfigFile(".env")
 	err := viper.ReadInConfig()
 	if err != nil {
 		panic(err)
 	}
-	var envVars EnvVars
-	err = viper.Unmarshal(&envVars)
+	err = viper.Unmarshal(&EnvVars)
 	if err != nil {
 		panic(err)
 	}
 	sess, err := session.NewSession(
 		&aws.Config{
-			Region: &envVars.AWSRegion,
+			Region: aws.String(EnvVars.AWSRegion),
 			Credentials: credentials.NewStaticCredentials(
-				envVars.AWSID,
-				envVars.AWSSecret,
-				envVars.AWSToken,
+				EnvVars.AWSID,
+				EnvVars.AWSSecret,
+				EnvVars.AWSToken,
 			),
 		},
 	)
 	if err != nil {
 		panic(err)
 	}
-	envVars.S3Client = s3.New(sess)
-	return &envVars
+	EnvVars.S3Client = s3.New(sess)
+	return &EnvVars
 }
