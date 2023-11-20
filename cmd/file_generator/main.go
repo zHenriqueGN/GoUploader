@@ -3,13 +3,18 @@ package main
 import (
 	"fmt"
 	"os"
+
+	"github.com/zHenriqueGN/GoUploader/internal/config"
 )
 
-var (
-	numFiles = 100
-)
+var envVars *config.EnvVars
+
+func init() {
+	envVars = config.LoadConfigs()
+}
 
 func main() {
+	numFiles := envVars.NumFiles
 	for i := 0; i < numFiles; i++ {
 		file, err := os.Create(fmt.Sprintf("./tmp/file-%d.txt", i))
 		if err != nil {
