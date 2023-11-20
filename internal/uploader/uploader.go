@@ -4,17 +4,20 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sync"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/zHenriqueGN/GoUploader/internal/config"
 )
 
-func UploadFile(fileName string) {
+func UploadFile(uploadCtrl <-chan struct{}, wg *sync.WaitGroup, fileName string) {
+	defer wg.Done()
 	filePath := fmt.Sprintf("./tmp/%s", fileName)
 	file, err := os.Open(filePath)
 	if err != nil {
 		log.Printf("error opening file %s: %v\n", filePath, err)
+		<-uploadCtrl
 		return
 	}
 	defer file.Close()
@@ -26,7 +29,9 @@ func UploadFile(fileName string) {
 	})
 	if err != nil {
 		log.Printf("error uploading file %s: %v\n", filePath, err)
+		<-uploadCtrl
 		return
 	}
 	fmt.Printf("file %s uploaded successfully\n", filePath)
+	<-uploadCtrl
 }
