@@ -11,12 +11,13 @@ import (
 	"github.com/zHenriqueGN/GoUploader/internal/config"
 )
 
-func UploadFile(uploadCtrl <-chan struct{}, wg *sync.WaitGroup, fileName string) {
+func UploadFile(uploadCtrl <-chan struct{}, retryCtrl chan<- string, wg *sync.WaitGroup, fileName string) {
 	defer wg.Done()
 	filePath := fmt.Sprintf("./tmp/%s", fileName)
 	file, err := os.Open(filePath)
 	if err != nil {
 		log.Printf("error opening file %s: %v\n", filePath, err)
+		retryCtrl <- fileName
 		<-uploadCtrl
 		return
 	}
@@ -24,11 +25,12 @@ func UploadFile(uploadCtrl <-chan struct{}, wg *sync.WaitGroup, fileName string)
 	S3Client := config.EnvVars.S3Client
 	_, err = S3Client.PutObject(&s3.PutObjectInput{
 		Bucket: aws.String(config.EnvVars.S3BucketName),
-		Key:    aws.String(config.EnvVars.AWSID),
+		Key:    aws.String(fileName),
 		Body:   file,
 	})
 	if err != nil {
 		log.Printf("error uploading file %s: %v\n", filePath, err)
+		retryCtrl <- fileName
 		<-uploadCtrl
 		return
 	}
