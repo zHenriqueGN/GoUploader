@@ -5,7 +5,7 @@ import (
 	"sync"
 
 	"github.com/zHenriqueGN/GoUploader/internal/config"
-	"github.com/zHenriqueGN/GoUploader/internal/uploader"
+	"github.com/zHenriqueGN/GoUploader/internal/controller"
 )
 
 func init() {
@@ -22,7 +22,7 @@ func main() {
 	for _, file := range files {
 		wg.Add(1)
 		uploadCtrl <- struct{}{}
-		go uploader.UploadFile(uploadCtrl, &wg, file.Name())
+		go controller.UploadFile(uploadCtrl, &wg, file.Name())
 	}
 	wg.Wait()
 }
