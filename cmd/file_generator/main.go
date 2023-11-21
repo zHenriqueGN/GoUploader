@@ -7,6 +7,10 @@ import (
 	"github.com/zHenriqueGN/GoUploader/internal/config"
 )
 
+func init() {
+	config.LoadConfigs()
+}
+
 func main() {
 	numFiles := config.EnvVars.NumFiles
 	for i := 0; i < numFiles; i++ {
